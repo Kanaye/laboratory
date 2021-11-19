@@ -1,6 +1,8 @@
 # laboratory guided tour
 This branch contains extra code to add a guided tour to laboratory.
-I've created this as part of [Meridian 2021](https://meridian.stellar.org/) Docpprint.
+I've created this as part of [Meridian 2021](https://meridian.stellar.org/) Docsprint.
+
+You can find a demo of this tour on the introduction page of laboratory hosted here: https://laboratory.kany.xyz
 
 The reason for this tour is, that every developer getting into stellar will sooner or later stumble over Laboratory.
 And I as a Stellar Quest Lumenaut can tell: Understanding Laboratory at first can be challenging.
