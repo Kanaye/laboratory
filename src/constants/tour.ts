@@ -1,6 +1,10 @@
 import Shepherd from 'shepherd.js';
 import type Tour from 'shepherd.js/src/types/tour';
 import type Step from 'shepherd.js/src/types/step';
+import { store } from '../config/store';
+import SLUG from './slug';
+
+const dispatch = store.dispatch;
 
 const options: Tour.TourOptions = {
     defaultStepOptions: {
@@ -38,7 +42,7 @@ const awaitElementExistence = (selector: string) => {
 };
 
 /**
- * The other Hackaround. 
+ * The other Hackaround.
  * Could probably be replaced by manipulating state-management directly.
  */
 const click = (selector: string) => {
@@ -47,7 +51,6 @@ const click = (selector: string) => {
         element.click();
     }
 };
-
 
 const steps: Step.StepOptions[] = [
     {
@@ -61,17 +64,16 @@ const steps: Step.StepOptions[] = [
             element: '.NetworkPicker',
             on: 'bottom-end',
         },
-        buttons: [
-            {
-                classes: 's-button',
-                text: 'Continue',
-                action() {
-                    // TODO: think how to make this workaround less hacky
-                    click('.NetworkPicker .s-buttonGroup__wrapper:first-child');
-                    this.next();
+        when: {
+            show: () => dispatch({
+                type: "SET_PARAMS",
+                params: {
+                    name: 'test',
+                    horizonURL: "https://horizon-testnet.stellar.org",
+                    networkPassphrase: "Test SDF Network ; September 2015",
                 },
-            },
-        ],
+            }),
+        },
     },
     {
         title: 'Account creation',
@@ -81,14 +83,11 @@ const steps: Step.StepOptions[] = [
             on: 'bottom',
         },
         when: {
-            show() {
-                // TODO: think how to make this workaround less hacky
-                click('[href="#account-creator"]');
-            },
+            show: () => dispatch({ type: "UPDATE_LOCATION", slug: SLUG.ACCOUNT_CREATOR }),
         },
     },
     {
-        beforeShowPromise: () => awaitElementExistence('.AccountCreator__section'),
+        // beforeShowPromise: () => awaitElementExistence('.AccountCreator__section'),
         title: 'Keypairs',
         text: 'Every account on the network starts with a keypair. You can generate a new one here.',
         attachTo: {
@@ -107,41 +106,31 @@ const steps: Step.StepOptions[] = [
     {
         title: 'Explore Endpoints',
         text: 'The "Explore Endpoints" tab allows you to query Horizon for different resources on the network.',
-        when: {
-            show() {
-                // TODO: think how to make this workaround less hacky
-                click('[href="#explorer"]');
-            },
-        },
         attachTo: {
             element: '[href="#explorer"]',
             on: 'bottom',
         },
+        when: {
+            show: () => dispatch({ type: "UPDATE_LOCATION", slug: SLUG.EXPLORER }),
+            hide: () => dispatch({ type: 'CHOOSE_ENDPOINT', resource: 'accounts', endpoint: '' }),
+        },
     },
     {
-        beforeShowPromise: () => awaitElementExistence('.EndpointPicker__section'),
         title: 'Resources',
         text: 'Here you can select what resource you are looking for, for example accounts, assets or offers.',
         attachTo: {
-            element: '.EndpointPicker__section nav',
+            element: '[data-testid="endpoint-explorer-resource"] nav',
             on: 'right',
         },
-        buttons: [
-            {
-                classes: 's-button',
-                text: 'Continue',
-                action() {
-                    click('.EndpointPicker__section nav li:first-child');
-                    this.next();
-                },
-            },
-        ],
+        when: {
+            hide: () => dispatch({ type: 'CHOOSE_ENDPOINT', resource: 'accounts', endpoint: 'single' }),
+        },
     },
     {
-        title: 'Resources',
+        title: 'Endpoints',
         text: 'For most resource (e.g. accounts in this case) you can select if you want to query a specific resource by its id or if you want to list multiple. In any case Laboratory will show you fields and options you can (or need to) specify to get a result that matches your needs.',
         attachTo: {
-            element: '.EndpointExplorer__picker div:nth-child(2) nav',
+            element: '[data-testid="endpoint-explorer-endpoint"] nav',
             on: 'bottom',
         },
     },
@@ -153,18 +142,16 @@ const steps: Step.StepOptions[] = [
             on: 'bottom',
         },
         when: {
-            show() {
-                click('[href="#txbuilder"]');
-            },
+            show: () => dispatch({ type: "UPDATE_LOCATION", slug: SLUG.TXBUILDER }),
         },
     },
     {
-        beforeShowPromise: () => awaitElementExistence('.TransactionOp__config'),
+        // beforeShowPromise: () => awaitElementExistence('.TransactionOp__config'),
         title: 'Transaction Builder',
         text: 'This form allows you to set general transaction parameters like the source account, sequence number or memo.',
         attachTo: {
             element: '.TransactionOp__config',
-            on: 'top', 
+            on: 'top',
         },
     },
     {
@@ -191,14 +178,12 @@ const steps: Step.StepOptions[] = [
             on: 'bottom',
         },
         when: {
-            show() {
-                click('[href="#txsigner"]');
-            },
+            show: () => dispatch({ type: "UPDATE_LOCATION", slug: SLUG.TXSIGNER }),
         },
     },
     {
         // TODO: either "live create" XDR in a transaction builder tutorial or include example XDR to import.
-        beforeShowPromise: () => awaitElementExistence('.TransactionSigner'),
+        // beforeShowPromise: () => awaitElementExistence('.TransactionSigner'),
         title: 'Signing Transactions',
         text: 'To import your transaction, you can either click the button on the "Build Transaction" tab or paste it into this text field. Once the tranaaction got imported, you got multiple options to sign it. For example directly with a secret key, using a hardware wallet or with browser extension wallets like albedo or freighter.',
         attachTo: {
@@ -215,13 +200,11 @@ const steps: Step.StepOptions[] = [
             on: 'bottom',
         },
         when: {
-            show() {
-                click('[href="#xdr-viewer"]');
-            },
+            show: () => dispatch({ type: "UPDATE_LOCATION", slug: SLUG.XDRVIEWER }),
         },
     },
     {
-        beforeShowPromise: () => awaitElementExistence('.xdrInput__input__textarea'),
+        // beforeShowPromise: () => awaitElementExistence('.xdrInput__input__textarea'),
         title: 'View XDR',
         text: 'Here you can enter your XDR but pasting it. You may also get here page by clicking XDR (or related buttons) at some of Laboratories sections, for example by clicking XDR in Horizons responses in the "Explore Endpoints" tab.',
         attachTo: {
